@@ -14,7 +14,7 @@ const SEED_TASKS = [
 	{ id: 3, title: "Have a Video Chat", done: false },
 ];
 
-const tasks = SEED_TASKS.map((task) => ({ ...task }));
+let tasks = SEED_TASKS.map((task) => ({ ...task }));
 
 //STAGE 1
 //Add the endpoint GET / returning JSON that describes your API:
@@ -64,4 +64,40 @@ app.post("/tasks", (req, res) => {
 });
 
 //STAGE 4
-// 
+app.put("/tasks/:id", (req, res) => {
+	if (!req.body || Object.keys(req.body).length === 0) {
+		return res.status(400).json({ error: "Body is empty" });
+	}
+
+	const task = tasks.find((task) => task.id === Number(req.params.id));
+
+	if (!task) {
+		return res
+			.status(404)
+			.json({ error: `Task ${req.params.id} not found` });
+	}
+
+	if (req.body.title) {
+		task.title = req.body.title;
+	}
+
+	if (req.body.done) {
+		task.done = req.body.done;
+	}
+
+	res.status(201).json(task);
+});
+
+app.delete("/tasks/:id", (req, res) => {
+	const task = tasks.find((task) => task.id === Number(req.params.id));
+
+	if (!task) {
+		return res
+			.status(404)
+			.json({ error: `Task ${req.params.id} not found` });
+	}
+
+	tasks = tasks.filter((task) => task.id !== Number(req.params.id));
+
+	res.status(204).json({ success: `Task ${req.params.id} deleted!` });
+});
