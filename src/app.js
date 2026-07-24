@@ -20,6 +20,11 @@ const SEED_TASKS = [
 
 const tasks = SEED_TASKS.map((task) => ({ ...task }));
 
+const resetTasks = () => {
+	tasks.length = 0;
+	tasks.push(...SEED_TASKS.map((task) => ({ ...task })));
+};
+
 //STAGE 1
 //Add the endpoint GET / returning JSON that describes your API:
 app.get("/", (req, res) => {
@@ -35,7 +40,7 @@ app.get("/health", (req, res) => {
 app.get("/tasks", (req, res) => {
 	let result = tasks;
 
-	// filter done
+	// Extra: filter done
 	if (req.query.done !== undefined) {
 		if (req.query.done !== "true" && req.query.done !== "false") {
 			return res
@@ -48,7 +53,7 @@ app.get("/tasks", (req, res) => {
 		);
 	}
 
-	// search
+	// Extra: search
 	if (req.query.search !== undefined) {
 		const word = String(req.query.search).trim();
 		if (word === "") {
@@ -132,4 +137,10 @@ app.delete("/tasks/:id", (req, res) => {
 
 	tasks.splice(index, 1);
 	res.status(204).json();
+});
+
+//EXTRA: Reset
+app.post("/reset", (req, res) => {
+	resetTasks();
+	res.json(tasks);
 });
