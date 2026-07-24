@@ -144,3 +144,14 @@ app.post("/reset", (req, res) => {
 	resetTasks();
 	res.json(tasks);
 });
+
+//EXTRA: Stats
+app.get("/stats", (req, res) => {
+	let done = tasks.filter((task) => task.done === true).length;
+
+	res.json({
+		total: tasks.length,
+		done: done,
+		open: tasks.length - done,
+	});
+});
