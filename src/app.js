@@ -1,6 +1,10 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("../openapi.json");
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(express.json());
 
@@ -14,7 +18,7 @@ const SEED_TASKS = [
 	{ id: 3, title: "Have a Video Chat", done: false },
 ];
 
-let tasks = SEED_TASKS.map((task) => ({ ...task }));
+const tasks = SEED_TASKS.map((task) => ({ ...task }));
 
 //STAGE 1
 //Add the endpoint GET / returning JSON that describes your API:
@@ -66,7 +70,7 @@ app.post("/tasks", (req, res) => {
 //STAGE 4
 app.put("/tasks/:id", (req, res) => {
 	if (!req.body || Object.keys(req.body).length === 0) {
-		return res.status(400).json({ error: "Body is empty" });
+		return res.status(400).json({ error: "Request body must have TITLE and/or DONE" });
 	}
 
 	const task = tasks.find((task) => task.id === Number(req.params.id));
@@ -76,9 +80,9 @@ app.put("/tasks/:id", (req, res) => {
 			.status(404)
 			.json({ error: `Task ${req.params.id} not found` });
 	}
-
+	
 	if (req.body.title) {
-		task.title = req.body.title;
+		task.title = String(req.body.title).trim();
 	}
 
 	if (req.body.done) {
@@ -89,15 +93,14 @@ app.put("/tasks/:id", (req, res) => {
 });
 
 app.delete("/tasks/:id", (req, res) => {
-	const task = tasks.find((task) => task.id === Number(req.params.id));
+	const index = tasks.findIndex((task) => task.id === Number(req.params.id));
 
-	if (!task) {
+	if (index === -1) {
 		return res
 			.status(404)
 			.json({ error: `Task ${req.params.id} not found` });
 	}
 
-	tasks = tasks.filter((task) => task.id !== Number(req.params.id));
-
-	res.status(204).json({ success: `Task ${req.params.id} deleted!` });
+	tasks.splice(index, 1);
+	res.status(204).json();
 });
