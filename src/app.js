@@ -37,16 +37,31 @@ app.get("/tasks", (req, res) => {
 
 	// filter done
 	if (req.query.done !== undefined) {
-		if (req.query.done !== 'true' && req.query.done !== 'false') {
-			return res.status(400).json({error: "done must be true or false"})
+		if (req.query.done !== "true" && req.query.done !== "false") {
+			return res
+				.status(400)
+				.json({ error: "done must be true or false" });
 		}
 
-		result = result.filter((task) => task.done === (req.query.done === 'true'));
+		result = result.filter(
+			(task) => task.done === (req.query.done === "true"),
+		);
 	}
-	
+
+	// search
+	if (req.query.search !== undefined) {
+		const word = String(req.query.search).trim();
+		if (word === "") {
+			return res.status(400).json({ error: "Search must not be empty" });
+		}
+
+		result = result.filter((task) =>
+			task.title.toLowerCase().includes(word.toLowerCase()),
+		);
+	}
+
 	res.json(result);
 });
-
 
 app.get("/tasks/:id", (req, res) => {
 	const task = tasks.find((task) => task.id === Number(req.params.id));
@@ -82,7 +97,9 @@ app.post("/tasks", (req, res) => {
 //STAGE 4
 app.put("/tasks/:id", (req, res) => {
 	if (!req.body || Object.keys(req.body).length === 0) {
-		return res.status(400).json({ error: "Request body must have TITLE and/or DONE" });
+		return res
+			.status(400)
+			.json({ error: "Request body must have TITLE and/or DONE" });
 	}
 
 	const task = tasks.find((task) => task.id === Number(req.params.id));
@@ -92,7 +109,7 @@ app.put("/tasks/:id", (req, res) => {
 			.status(404)
 			.json({ error: `Task ${req.params.id} not found` });
 	}
-	
+
 	if (req.body.title) {
 		task.title = String(req.body.title).trim();
 	}
