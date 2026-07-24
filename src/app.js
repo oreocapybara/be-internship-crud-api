@@ -33,8 +33,20 @@ app.get("/health", (req, res) => {
 
 //STAGE 2
 app.get("/tasks", (req, res) => {
-	res.json(tasks);
+	let result = tasks;
+
+	// filter done
+	if (req.query.done !== undefined) {
+		if (req.query.done !== 'true' && req.query.done !== 'false') {
+			return res.status(400).json({error: "done must be true or false"})
+		}
+
+		result = result.filter((task) => task.done === (req.query.done === 'true'));
+	}
+	
+	res.json(result);
 });
+
 
 app.get("/tasks/:id", (req, res) => {
 	const task = tasks.find((task) => task.id === Number(req.params.id));
