@@ -28,16 +28,27 @@ const resetTasks = () => {
 //STAGE 1
 //Add the endpoint GET / returning JSON that describes your API:
 app.get("/", (req, res) => {
+	// #swagger.summary = 'API description'
 	res.json({ name: "Task API", version: "1.0", endpoints: ["/tasks"] });
 });
 
 //Add GET /health returning { "status": "ok" }
 app.get("/health", (req, res) => {
+	// #swagger.summary = 'Health check'
 	res.json({ status: "ok" });
 });
 
 //STAGE 2
 app.get("/tasks", (req, res) => {
+	// #swagger.summary = 'List tasks'
+	/* #swagger.responses[200] = {
+		description: 'JSON array of all tasks',
+		content: {
+			"application/json": {
+				schema: { type: "array", items: { $ref: "#/components/schemas/Task" } }
+			}
+		}
+	} */
 	let result = tasks;
 
 	// Extra: filter done
@@ -69,6 +80,22 @@ app.get("/tasks", (req, res) => {
 });
 
 app.get("/tasks/:id", (req, res) => {
+	// #swagger.summary = 'Get a task'
+	/* #swagger.responses[200] = {
+		description: 'Task found',
+		content: {
+			"application/json": { schema: { $ref: "#/components/schemas/Task" } }
+		}
+	} */
+	/* #swagger.responses[404] = {
+		description: 'Task not found',
+		content: {
+			"application/json": {
+				schema: { $ref: "#/components/schemas/Error" },
+				example: { error: "Task 99 not found" }
+			}
+		}
+	} */
 	const task = tasks.find((task) => task.id === Number(req.params.id));
 
 	if (!task) {
@@ -81,6 +108,27 @@ app.get("/tasks/:id", (req, res) => {
 
 //STAGE 3
 app.post("/tasks", (req, res) => {
+	// #swagger.summary = 'Create a task'
+	/* #swagger.requestBody = {
+		required: true,
+		content: {
+			"application/json": {
+				schema: { type: "object", properties: { title: { type: "string" } }, required: ["title"] }
+			}
+		}
+	} */
+	/* #swagger.responses[201] = {
+		description: 'Task created',
+		content: {
+			"application/json": { schema: { $ref: "#/components/schemas/Task" } }
+		}
+	} */
+	/* #swagger.responses[400] = {
+		description: 'Missing/empty title',
+		content: {
+			"application/json": { schema: { $ref: "#/components/schemas/Error" } }
+		}
+	} */
 	const { title } = req.body;
 
 	if (title === undefined || title === null || title.trim() === "") {
@@ -101,6 +149,45 @@ app.post("/tasks", (req, res) => {
 
 //STAGE 4
 app.put("/tasks/:id", (req, res) => {
+	// #swagger.summary = 'Update a task'
+	/* #swagger.requestBody = {
+		required: true,
+		content: {
+			"application/json": {
+				schema: {
+					type: "object",
+					properties: {
+						title: { type: "string", example: "Buy Milk" },
+						done: { type: "boolean", example: false }
+					}
+				}
+			}
+		}
+	} */
+	/* #swagger.responses[201] = {
+		description: 'Task updated',
+		content: {
+			"application/json": { schema: { $ref: "#/components/schemas/Task" } }
+		}
+	} */
+	/* #swagger.responses[400] = {
+		description: 'Empty body',
+		content: {
+			"application/json": {
+				schema: { $ref: "#/components/schemas/Error" },
+				example: { error: "Request body must have TITLE and/or DONE" }
+			}
+		}
+	} */
+	/* #swagger.responses[404] = {
+		description: 'Task not found',
+		content: {
+			"application/json": {
+				schema: { $ref: "#/components/schemas/Error" },
+				example: { error: "Task 99 not found" }
+			}
+		}
+	} */
 	if (!req.body || Object.keys(req.body).length === 0) {
 		return res
 			.status(400)
@@ -127,6 +214,17 @@ app.put("/tasks/:id", (req, res) => {
 });
 
 app.delete("/tasks/:id", (req, res) => {
+	// #swagger.summary = 'Delete a task'
+	/* #swagger.responses[204] = { description: 'Task deleted' } */
+	/* #swagger.responses[404] = {
+		description: 'Task not found',
+		content: {
+			"application/json": {
+				schema: { $ref: "#/components/schemas/Error" },
+				example: { error: "Task 99 not found" }
+			}
+		}
+	} */
 	const index = tasks.findIndex((task) => task.id === Number(req.params.id));
 
 	if (index === -1) {
@@ -141,12 +239,14 @@ app.delete("/tasks/:id", (req, res) => {
 
 //EXTRA: Reset
 app.post("/reset", (req, res) => {
+	// #swagger.summary = 'Reset tasks to seed data'
 	resetTasks();
 	res.json(tasks);
 });
 
 //EXTRA: Stats
 app.get("/stats", (req, res) => {
+	// #swagger.summary = 'Task counts'
 	let done = tasks.filter((task) => task.done === true).length;
 
 	res.json({
