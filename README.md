@@ -20,8 +20,26 @@ npm i
 **Run it**
 
 ```bash
-node src/app.js
+npm run dev
 ```
+
+## Scripts
+
+| Script             | Use                                                |
+| ------------------ | --------------------------------------------------- |
+| `npm start`        | Generates swagger docs, runs the API               |
+| `npm run dev`       | Same as start, but restarts on file changes        |
+| `npm run swagger`   | Regenerates `openapi.json` from route annotations  |
+
+## Architecture
+
+Layered: routes → services → repositories.
+
+- **Routes** (`src/routes`) parse the request, call a service, send the response. No business logic.
+- **Services** (`src/services`) hold the business logic and validation. Throw `ValidationError`/`NotFoundError` on bad input.
+- **Repositories** (`src/repositories`) own the data (in-memory for now). Routes and services never touch it directly.
+
+Errors thrown by services bubble up to `src/middleware/error-handler.js`, which turns them into the right HTTP status.
 
 ## Endpoints
 
@@ -30,6 +48,8 @@ node src/app.js
 | [`GET /`](#get-)                       | API Metadata                      | metadata          |
 | [`GET /health`](#get-health)           | Health Check                      | **status: ok**    |
 | [`GET /tasks`](#get-tasks)             | Return all tasks                  | array of objects  |
+| [`GET /stats`](#get-stats)             | Task counts (total/done/open)     | object            |
+| [`POST /reset`](#post-reset)           | Reset tasks to seed data          | array of objects  |
 | [`POST /tasks`](#post-tasks)           | Creates a task                    | **201, 400**      |
 | [`GET /tasks/:id`](#get-tasksid)       | Return a task                     | **200, 404**      |
 | [`PUT /tasks/:id`](#put-tasksid)       | Update a task                     | **201, 400, 404** |
@@ -90,6 +110,42 @@ Returns the list of tasks
 
 ```bash
 curl -i http://localhost:3000/tasks
+```
+
+### `GET /stats`
+
+Returns task counts
+
+**Response**
+
+```json
+{ "total": 3, "done": 1, "open": 2 }
+```
+
+**Example:**
+
+```bash
+curl -i http://localhost:3000/stats
+```
+
+### `POST /reset`
+
+Resets tasks back to the seed data
+
+**Response**
+
+```json
+[
+	{ "id": 1, "title": "Do Laundry", "done": false },
+	{ "id": 2, "title": "Fix Laptop", "done": true },
+	{ "id": 3, "title": "Have a Video Chat", "done": false }
+]
+```
+
+**Example:**
+
+```bash
+curl -X POST http://localhost:3000/reset
 ```
 
 ### `POST /tasks`
