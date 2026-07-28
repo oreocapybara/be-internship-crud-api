@@ -9,7 +9,7 @@ function errorHandler(err, req, res, next) {
 	}
 
 	if (err instanceof NotFoundError) {
-		return res.status(404).json({ error: err.msg });
+		return res.status(404).json({ error: err.message });
 	}
 
 	// Server bug
