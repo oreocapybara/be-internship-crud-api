@@ -1,3 +1,5 @@
+//STAGE 0: SQLite Database
+
 const Database = require("better-sqlite3");
 const db = new Database("./src/repositories/tasks.db");
 
@@ -27,12 +29,14 @@ if (row.count === 0) {
 	insertSeedTasks(SEED_TASKS);
 }
 
+//STAGE 1: READ Endpoints
 function findAll() {
 	return db.prepare(`SELECT * FROM tasks`).all();
 }
 
 const findTask = (id) => {
 	return db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(id);
+	
 	// return tasks.find((task) => (task.id === id ? { ...task } : null));
 };
 
