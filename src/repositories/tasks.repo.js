@@ -107,8 +107,20 @@ const search = (query) => {
 		.all(`%${query}%`);
 };
 
+// EXTRA: Filter done
 const filterDone = (done) => {
 	return db.prepare(`SELECT * FROM tasks WHERE done = ?`).all(done ? 1 : 0);
+};
+
+// EXRA: Stats
+const stats = () => {
+	const total = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
+	const done = db.prepare(`SELECT COUNT(*) AS count FROM tasks WHERE done = 1`).get();
+	return {
+		total: total.count,
+		done: done.count,
+		open: total.count - done.count,
+	};
 };
 
 module.exports = {
@@ -120,4 +132,5 @@ module.exports = {
 	reset,
 	search,
 	filterDone,
+	stats,
 };

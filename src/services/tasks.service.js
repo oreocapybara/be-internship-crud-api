@@ -88,14 +88,7 @@ function deleteTask(id) {
 }
 
 function getStats() {
-	let done = repo.findAll().filter((task) => task.done === true).length;
-	let total = repo.findAll().length;
-
-	return {
-		total: total,
-		done: done,
-		open: total - done,
-	};
+	return repo.stats()
 }
 
 function resetTasks() {
