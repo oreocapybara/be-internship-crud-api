@@ -7,8 +7,16 @@ const db = new Database("./src/repositories/tasks.db");
 db.exec(`CREATE TABLE IF NOT EXISTS tasks(
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		title TEXT NOT NULL,
-		done INTEGER DEFAULT 0
+		done INTEGER DEFAULT 0,
+		created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+		updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 		)`);
+
+db.exec(`CREATE TRIGGER IF NOT EXISTS update_tasks_updated_at AFTER UPDATE ON tasks
+	FOR EACH ROW
+	BEGIN
+		UPDATE tasks SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
+	END`);
 
 const row = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
 // SEED initial tasks if tasks is empty
@@ -115,7 +123,9 @@ const filterDone = (done) => {
 // EXRA: Stats
 const stats = () => {
 	const total = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
-	const done = db.prepare(`SELECT COUNT(*) AS count FROM tasks WHERE done = 1`).get();
+	const done = db
+		.prepare(`SELECT COUNT(*) AS count FROM tasks WHERE done = 1`)
+		.get();
 	return {
 		total: total.count,
 		done: done.count,
