@@ -41,12 +41,12 @@ function getTask(id) {
 }
 
 function createTask(body = {}) {
-	const { title } = body;
+	const { title, done } = body;
 	if (title === undefined || title === null || title.trim() === "") {
 		throw new ValidationError("Title is required and cannot be empty");
 	}
 
-	return repo.create({ title: String(title).trim(), done: false });
+	return repo.create({ title: String(title).trim(), done: done });
 }
 
 function updateTask(id, body = {}) {
