@@ -95,7 +95,7 @@ const remove = (id) => {
 
 // Extra: Reset task
 const reset = () => {
-	db.prepare(`DELETE FROM tasks where id > 0`).run(); // Delete ALL
+	db.prepare(`DELETE FROM tasks WHERE id > 0`).run(); // Delete ALL
 	initializeTasks();
 	// tasks.length = 0;
 	// tasks.push(...SEED_TASKS.map((task) => ({ ...task })));
