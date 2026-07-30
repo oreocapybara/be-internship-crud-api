@@ -42,7 +42,7 @@
             "name": "done",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "boolean"
             }
           },
           {

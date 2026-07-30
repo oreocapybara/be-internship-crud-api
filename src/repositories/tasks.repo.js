@@ -10,7 +10,6 @@ db.exec(`CREATE TABLE IF NOT EXISTS tasks(
 		done INTEGER DEFAULT 0
 		)`);
 
-
 const row = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
 // SEED initial tasks if tasks is empty
 if (row.count === 0) {
@@ -101,4 +100,24 @@ const reset = () => {
 	// tasks.push(...SEED_TASKS.map((task) => ({ ...task })));
 };
 
-module.exports = { findAll, findTask, create, update, remove, reset };
+// Extra: Search task
+const search = (query) => {
+	return db
+		.prepare(`SELECT * FROM tasks WHERE title LIKE ?`)
+		.all(`%${query}%`);
+};
+
+const filterDone = (done) => {
+	return db.prepare(`SELECT * FROM tasks WHERE done = ?`).all(done ? 1 : 0);
+};
+
+module.exports = {
+	findAll,
+	findTask,
+	create,
+	update,
+	remove,
+	reset,
+	search,
+	filterDone,
+};

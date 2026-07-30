@@ -13,7 +13,7 @@ function getAllTasks({ done, search } = {}) {
 			throw new ValidationError("done must be true or false");
 		}
 
-		result = result.filter((task) => task.done === (done === "true"));
+		result = repo.filterDone(done === "true" ? true : false)
 	}
 
 	// Extra: search
@@ -23,9 +23,7 @@ function getAllTasks({ done, search } = {}) {
 			throw new ValidationError("Search must not be empty");
 		}
 
-		result = result.filter((task) =>
-			task.title.toLowerCase().includes(word.toLowerCase()),
-		);
+		result = repo.search(word);
 	}
 
 	return result;
