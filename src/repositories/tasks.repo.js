@@ -10,9 +10,8 @@ db.exec(`CREATE TABLE IF NOT EXISTS tasks(
 		done INTEGER DEFAULT 0
 		)`);
 
-//SEED database with tasks when empty;
-const row = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
 
+const row = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
 // SEED initial tasks if tasks is empty
 if (row.count === 0) {
 	initializeTasks();
