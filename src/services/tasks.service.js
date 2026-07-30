@@ -50,8 +50,8 @@ function createTask(body = {}) {
 }
 
 function updateTask(id, body = {}) {
-	const hasTitle = body.title;
-	const hasDone = body.done;
+	const hasTitle = "title" in body;
+	const hasDone = "done" in body;
 
 	if (!body || Object.keys(body).length === 0) {
 		throw new ValidationError("Request body must have TITLE and/or DONE");

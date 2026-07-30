@@ -13,7 +13,12 @@ db.exec(`CREATE TABLE IF NOT EXISTS tasks(
 //SEED database with tasks when empty;
 const row = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
 
+// SEED initial tasks if tasks is empty
 if (row.count === 0) {
+	initializeTasks();
+}
+
+function initializeTasks() {
 	const insert = db.prepare(`INSERT INTO tasks(title, done) VALUES(?, ?)`);
 
 	const SEED_TASKS = [
@@ -36,54 +41,65 @@ function findAll() {
 
 const findTask = (id) => {
 	return db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(id);
-	
+
 	// return tasks.find((task) => (task.id === id ? { ...task } : null));
 };
 
 const create = ({ title, done }) => {
-	const id =
-		tasks.length === 0 ? 1 : Math.max(...tasks.map((task) => task.id)) + 1;
+	const { lastInsertRowid } = db
+		.prepare(`INSERT INTO tasks(title, done) VALUES(?, ?)`)
+		.run(title, done ? 1 : 0);
 
-	const newTask = { id, title, done };
+	return findTask(lastInsertRowid);
 
-	tasks.push(newTask);
+	// const id =
+	// // 	tasks.length === 0 ? 1 : Math.max(...tasks.map((task) => task.id)) + 1;
 
-	return { ...newTask };
+	// // const newTask = { id, title, done };
+
+	// // tasks.push(newTask);
+
+	// // return { ...newTask };
 };
 
 const update = (id, changes) => {
-	const task = tasks.find((task) => task.id === id);
+	db.prepare(
+		`UPDATE tasks SET title = COALESCE(?, title), done = COALESCE(?, done) WHERE id = ?`,
+	).run(
+		changes.title ?? null,
+		changes.done === undefined ? null : changes.done ? 1 : 0,
+		id,
+	);
 
-	if (!task) {
-		return null;
-	}
+	return findTask(id);
+	// const task = tasks.find((task) => task.id === id);
 
-	if (changes.title) {
-		task.title = changes.title;
-	}
+	// if (!task) {
+	// 	return null;
+	// }
 
-	if (changes.done) {
-		task.done = changes.done;
-	}
+	// if (changes.title) {
+	// 	task.title = changes.title;
+	// }
 
-	return { ...task };
+	// if (changes.done) {
+	// 	task.done = changes.done;
+	// }
+
+	// return { ...task };
 };
 
 const remove = (id) => {
-	const index = tasks.findIndex((task) => task.id === id);
-
-	if (index === -1) {
-		return false;
-	}
-
-	tasks.splice(index, 1);
-	return true;
+	const { changes } = db.prepare(`DELETE FROM tasks WHERE id = ?`).run(id);
+	return changes > 0;
 };
 
 // Extra: Reset task
 const reset = () => {
-	tasks.length = 0;
-	tasks.push(...SEED_TASKS.map((task) => ({ ...task })));
+	db.prepare(`DELETE FROM tasks where id > 0`).run(); // Delete ALL
+	initializeTasks();
+	// tasks.length = 0;
+	// tasks.push(...SEED_TASKS.map((task) => ({ ...task })));
 };
 
 module.exports = { findAll, findTask, create, update, remove, reset };
