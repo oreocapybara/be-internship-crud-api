@@ -39,17 +39,18 @@
         "description": "",
         "parameters": [
           {
-            "name": "done",
+            "name": "search",
             "in": "query",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "search",
+            "name": "done",
             "in": "query",
+            "description": "Filter tasks by done status",
             "schema": {
-              "type": "string"
+              "type": "boolean"
             }
           }
         ],
@@ -102,7 +103,12 @@
                 "type": "object",
                 "properties": {
                   "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Buy Milk"
+                  },
+                  "done": {
+                    "type": "boolean",
+                    "example": false
                   }
                 },
                 "required": [

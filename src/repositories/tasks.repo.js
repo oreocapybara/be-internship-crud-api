@@ -1,139 +1,125 @@
-//STAGE 0: SQLite Database
+//STAGE 1: Connect via .env and create table
+const { Pool } = require("pg");
 
-const Database = require("better-sqlite3");
-const db = new Database("./src/repositories/tasks.db");
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-//Create a database table if it does not exist
-db.exec(`CREATE TABLE IF NOT EXISTS tasks(
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		title TEXT NOT NULL,
-		done INTEGER DEFAULT 0,
-		created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-		updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-		)`);
+async function initDB() {
+	//Create a database table if it does not exist
+	await pool.query(
+		`CREATE TABLE IF NOT EXISTS tasks(
+				id SERIAL PRIMARY KEY ,
+				title TEXT NOT NULL,
+				done BOOLEAN NOT NULL DEFAULT FALSE,
+				created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+				updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		);`,
+	);
 
-db.exec(`CREATE TRIGGER IF NOT EXISTS update_tasks_updated_at AFTER UPDATE ON tasks
-	FOR EACH ROW
-	BEGIN
-		UPDATE tasks SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
-	END`);
-
-const row = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
-// SEED initial tasks if tasks is empty
-if (row.count === 0) {
-	initializeTasks();
+	const res = await pool.query(`SELECT COUNT(*) AS count FROM tasks;`);
+	const count = parseInt(res.rows[0].count, 10);
+	// SEED initial tasks if tasks is empty
+	if (count === 0) {
+		await initializeTasks();
+	}
 }
 
-function initializeTasks() {
-	const insert = db.prepare(`INSERT INTO tasks(title, done) VALUES(?, ?)`);
-
+// SEED_TASKS
+async function initializeTasks() {
 	const SEED_TASKS = [
 		["Do Laundry", 0],
 		["Fix Laptop", 1],
 		["Have a Video Chat", 0],
 	];
 
-	const insertSeedTasks = db.transaction((tasks) => {
-		for (const task of tasks) insert.run(task);
-	});
-
-	insertSeedTasks(SEED_TASKS);
+	for (const [title, done] of SEED_TASKS) {
+		await pool.query(`INSERT INTO tasks(title, done) VALUES($1, $2);`, [
+			title,
+			done,
+		]);
+	}
 }
 
 //STAGE 1: READ Endpoints
-function findAll() {
-	return db.prepare(`SELECT * FROM tasks`).all();
-}
+const findAll = async () => {
+	const res = await pool.query(`SELECT * FROM tasks`);
 
-const findTask = (id) => {
-	return db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(id);
-
-	// return tasks.find((task) => (task.id === id ? { ...task } : null));
+	return res.rows;
 };
 
-const create = ({ title, done }) => {
-	const { lastInsertRowid } = db
-		.prepare(`INSERT INTO tasks(title, done) VALUES(?, ?)`)
-		.run(title, done ? 1 : 0);
+const findTask = async (id) => {
+	const res = await pool.query(`SELECT * FROM tasks WHERE id = $1`, [id]);
 
-	return findTask(lastInsertRowid);
-
-	// const id =
-	// // 	tasks.length === 0 ? 1 : Math.max(...tasks.map((task) => task.id)) + 1;
-
-	// // const newTask = { id, title, done };
-
-	// // tasks.push(newTask);
-
-	// // return { ...newTask };
+	return res.rows[0] || null;
 };
 
-const update = (id, changes) => {
-	db.prepare(
-		`UPDATE tasks SET title = COALESCE(?, title), done = COALESCE(?, done) WHERE id = ?`,
-	).run(
-		changes.title ?? null,
-		changes.done === undefined ? null : changes.done ? 1 : 0,
-		id,
+const create = async ({ title, done }) => {
+	const res = await pool.query(
+		`INSERT INTO tasks(title,done) VALUES($1, $2) RETURNING *;`,
+		[title, done],
 	);
 
-	return findTask(id);
-	// const task = tasks.find((task) => task.id === id);
-
-	// if (!task) {
-	// 	return null;
-	// }
-
-	// if (changes.title) {
-	// 	task.title = changes.title;
-	// }
-
-	// if (changes.done) {
-	// 	task.done = changes.done;
-	// }
-
-	// return { ...task };
+	return res.rows[0] || null;
 };
 
-const remove = (id) => {
-	const { changes } = db.prepare(`DELETE FROM tasks WHERE id = ?`).run(id);
-	return changes > 0;
+const update = async (id, changes) => {
+	const res = await pool.query(
+		`UPDATE tasks SET title = COALESCE($1, title), done = COALESCE($2, done) WHERE id = $3 RETURNING *`,
+		[
+			changes.title ?? null,
+			changes.done === undefined ? null : changes.done,
+			id,
+		],
+	);
+
+	return res.rows[0];
+};
+
+const remove = async (id) => {
+	const res = await pool.query(`DELETE FROM tasks where id = $1;`, [id]);
+	return res.rowCount > 0;
 };
 
 // Extra: Reset task
-const reset = () => {
-	db.prepare(`DELETE FROM tasks WHERE id > 0`).run(); // Delete ALL
-	initializeTasks();
-	// tasks.length = 0;
-	// tasks.push(...SEED_TASKS.map((task) => ({ ...task })));
+const reset = async () => {
+	await pool.query(`DELETE FROM tasks WHERE id > 0;`); // Delete ALL
+	await initializeTasks();
 };
 
 // Extra: Search task
-const search = (query) => {
-	return db
-		.prepare(`SELECT * FROM tasks WHERE title LIKE ?`)
-		.all(`%${query}%`);
+const search = async (query) => {
+	const res = await pool.query(`SELECT * FROM tasks WHERE title LIKE $1;`, [
+		`%${query}%`,
+	]);
+
+	return res.rows;
 };
 
 // EXTRA: Filter done
-const filterDone = (done) => {
-	return db.prepare(`SELECT * FROM tasks WHERE done = ?`).all(done ? 1 : 0);
+const filterDone = async (done) => {
+	const res = await pool.query(`SELECT * FROM tasks WHERE done = $1;`, [
+		done,
+	]);
+	return res.rows;
 };
 
+
+
+
 // EXRA: Stats
-const stats = () => {
-	const total = db.prepare(`SELECT COUNT(*) AS count FROM tasks`).get();
-	const done = db
-		.prepare(`SELECT COUNT(*) AS count FROM tasks WHERE done = 1`)
-		.get();
+const stats = async () => {
+	const total = await pool.query(`SELECT COUNT(*) AS count FROM tasks`);
+	const done = await pool.query(
+		`SELECT COUNT(*) AS count FROM tasks WHERE done = true`,
+	);
 	return {
-		total: total.count,
-		done: done.count,
-		open: total.count - done.count,
+		total: parseInt(total.rows[0].count),
+		done: parseInt(done.rows[0].count),
+		open: total.rows[0].count - done.rows[0].count,
 	};
 };
 
 module.exports = {
+	initDB,
 	findAll,
 	findTask,
 	create,

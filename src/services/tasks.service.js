@@ -4,8 +4,8 @@
 const { ValidationError, NotFoundError } = require("../errors");
 const repo = require("../repositories/tasks.repo");
 
-function getAllTasks({ done, search } = {}) {
-	let result = repo.findAll();
+async function getAllTasks({ done, search } = {}) {
+	let result = await repo.findAll();
 
 	// Extra: filter done
 	if (done !== undefined) {
@@ -13,7 +13,7 @@ function getAllTasks({ done, search } = {}) {
 			throw new ValidationError("done must be true or false");
 		}
 
-		result = repo.filterDone(done === "true" ? true : false)
+		result = await repo.filterDone(done === "true" ? true : false)
 	}
 
 	// Extra: search
@@ -23,14 +23,14 @@ function getAllTasks({ done, search } = {}) {
 			throw new ValidationError("Search must not be empty");
 		}
 
-		result = repo.search(word);
+		result = await repo.search(word);
 	}
 
 	return result;
 }
 
-function getTask(id) {
-	const task = repo.findTask(id);
+async function getTask(id) {
+	const task = await repo.findTask(id);
 
 	if (!task) {
 		throw new NotFoundError(`Task ${id} not found`);
@@ -38,16 +38,16 @@ function getTask(id) {
 	return task;
 }
 
-function createTask(body = {}) {
+async function createTask(body = {}) {
 	const { title, done } = body;
 	if (title === undefined || title === null || title.trim() === "") {
 		throw new ValidationError("Title is required and cannot be empty");
 	}
 
-	return repo.create({ title: String(title).trim(), done: done });
+	return await repo.create({ title: String(title).trim(), done: done });
 }
 
-function updateTask(id, body = {}) {
+async function updateTask(id, body = {}) {
 	const hasTitle = "title" in body;
 	const hasDone = "done" in body;
 
@@ -73,26 +73,26 @@ function updateTask(id, body = {}) {
 		changes.done = body.done;
 	}
 
-	const updated = repo.update(id, changes);
+	const updated = await repo.update(id, changes);
 
 	if (!updated) throw new NotFoundError(`Task ${id} not found`);
 
 	return updated;
 }
 
-function deleteTask(id) {
-	const removedTask = repo.remove(id);
+async function deleteTask(id) {
+	const removedTask = await repo.remove(id);
 	if (!removedTask) {
 		throw new NotFoundError(`Task ${id} not found`);
 	}
 }
 
-function getStats() {
-	return repo.stats()
+async function getStats() {
+	return await repo.stats()
 }
 
-function resetTasks() {
-	return repo.reset();
+async function resetTasks() {
+	return await repo.reset();
 }
 
 module.exports = {

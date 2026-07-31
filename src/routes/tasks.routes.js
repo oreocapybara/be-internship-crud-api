@@ -7,8 +7,13 @@ const service = require("../services/tasks.service");
 
 //STAGE 2
 // List all task with optional filter for done and search
-router.get("/tasks", (req, res, next) => {
+router.get("/tasks", async (req, res, next) => {
 	// #swagger.summary = 'List tasks'
+	/* #swagger.parameters['done'] = {
+		in: 'query',
+		description: 'Filter tasks by done status',
+		type: 'boolean'
+	} */
 	/* #swagger.responses[200] = {
 		description: 'JSON array of all tasks',
 		content: {
@@ -19,7 +24,7 @@ router.get("/tasks", (req, res, next) => {
 	} */
 	try {
 		res.json(
-			service.getAllTasks({
+			await service.getAllTasks({
 				done: req.query.done,
 				search: req.query.search,
 			}),
@@ -30,7 +35,7 @@ router.get("/tasks", (req, res, next) => {
 });
 
 // Extra: stats
-router.get("/stats", (req, res, next) => {
+router.get("/stats", async (req, res, next) => {
 	// #swagger.summary = 'Task counts'
 	/* #swagger.responses[200] = {
 		description: 'Task counts',
@@ -48,14 +53,14 @@ router.get("/stats", (req, res, next) => {
 		}
 	} */
 	try {
-		res.json(service.getStats());
+		res.json(await service.getStats());
 	} catch (err) {
 		next(err);
 	}
 });
 
 //Extra: reset tasks
-router.post("/reset", (req, res, next) => {
+router.post("/reset", async (req, res, next) => {
 	// #swagger.summary = 'Reset tasks to seed data'
 	/* #swagger.responses[200] = {
 		description: 'Tasks reset to seed data',
@@ -66,20 +71,20 @@ router.post("/reset", (req, res, next) => {
 		}
 	} */
 	try {
-		res.json(service.resetTasks());
+		res.json(await service.resetTasks());
 	} catch (err) {
 		next(err);
 	}
 });
 
 //Create a Task
-router.post("/tasks", (req, res, next) => {
+router.post("/tasks", async (req, res, next) => {
 	// #swagger.summary = 'Create a task'
 	/* #swagger.requestBody = {
 		required: true,
 		content: {
 			"application/json": {
-				schema: { type: "object", properties: { title: { type: "string" } }, required: ["title"] }
+				schema: { type: "object", properties: { title: { type: "string", example: "Buy Milk" }, done: {type: "boolean", example: false} }, required: ["title"] }
 			}
 		}
 	} */
@@ -96,7 +101,7 @@ router.post("/tasks", (req, res, next) => {
 		}
 	} */
 	try {
-		res.status(201).json(service.createTask(req.body ?? {}));
+		res.status(201).json(await service.createTask(req.body ?? {}));
 	} catch (err) {
 		next(err);
 	}
@@ -104,7 +109,7 @@ router.post("/tasks", (req, res, next) => {
 
 //STAGE 4
 // Get a single task
-router.get("/tasks/:id", (req, res, next) => {
+router.get("/tasks/:id", async (req, res, next) => {
 	// #swagger.summary = 'Get a task'
 	/* #swagger.responses[200] = {
 		description: 'Task found',
@@ -122,14 +127,14 @@ router.get("/tasks/:id", (req, res, next) => {
 		}
 	} */
 	try {
-		res.json(service.getTask(Number(req.params.id)));
+		res.json(await service.getTask(Number(req.params.id)));
 	} catch (err) {
 		next(err);
 	}
 });
 
 //Update a Task
-router.put("/tasks/:id", (req, res, next) => {
+router.put("/tasks/:id", async (req, res, next) => {
 	// #swagger.summary = 'Update a task'
 	/* #swagger.requestBody = {
 		required: true,
@@ -171,7 +176,7 @@ router.put("/tasks/:id", (req, res, next) => {
 	} */
 	try {
 		res.status(201).json(
-			service.updateTask(Number(req.params.id), req.body ?? {}),
+			await service.updateTask(Number(req.params.id), req.body ?? {}),
 		);
 	} catch (err) {
 		next(err);
@@ -179,7 +184,7 @@ router.put("/tasks/:id", (req, res, next) => {
 });
 
 //Delete Task
-router.delete("/tasks/:id", (req, res, next) => {
+router.delete("/tasks/:id", async (req, res, next) => {
 	// #swagger.summary = 'Delete a task'
 	/* #swagger.responses[204] = { description: 'Task deleted' } */
 	/* #swagger.responses[404] = {
@@ -192,7 +197,7 @@ router.delete("/tasks/:id", (req, res, next) => {
 		}
 	} */
 	try {
-		service.deleteTask(Number(req.params.id));
+		await service.deleteTask(Number(req.params.id));
 		res.status(204).send();
 	} catch (err) {
 		next(err);

@@ -7,13 +7,14 @@
 	"type": "commonjs",
 	"main": "index.js",
 	"scripts": {
-		"start": "node src/swagger.js && node index.js",
-		"dev": "node src/swagger.js && node --watch index.js",
+		"start": "node src/swagger.js && node --env-file=.env index.js",
+		"dev": "node src/swagger.js && node --env-file=.env --watch index.js",
 		"swagger": "node src/swagger.js"
 	},
 	"dependencies": {
 		"better-sqlite3": "^13.0.1",
 		"express": "^5.2.1",
+		"pg": "^8.22.0",
 		"swagger-autogen": "^2.23.7",
 		"swagger-ui-express": "^5.0.1"
 	}
