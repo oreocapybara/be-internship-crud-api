@@ -1,3 +1,4 @@
-/node_modules
+node_modules/
 .claude
 src/repositories/tasks.db
+.env
