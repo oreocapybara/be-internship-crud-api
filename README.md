@@ -20,7 +20,7 @@ npm i
 **Run it**
 
 ```bash
-npm run dev
+cp .env.example .env && docker compose up 
 ```
 
 ## Scripts
@@ -37,19 +37,12 @@ Layered: routes → services → repositories.
 
 - **Routes** (`src/routes`) parse the request, call a service, send the response. No business logic.
 - **Services** (`src/services`) hold the business logic and validation. Throw `ValidationError`/`NotFoundError` on bad input.
-- **Repositories** (`src/repositories`) hold the database using SQLite. Contains SQL commands for CRUD. Routes and services never touch it directly but calls its CRUD functions.
+- **Repositories** (`src/repositories`) hold the database using PostgreSQL. Contains SQL commands for CRUD. Routes and services never touch it directly but calls its CRUD functions.
 
 Errors thrown by services bubble up to `src/middleware/error-handler.js`, which turns them into the right HTTP status.
 
-## SQLite
-SQLite was used since its small, fast, and self contained which is great as a database for the TaskAPI.
-The database file is automatically created once `npm run dev` is used
-
-## DB Browser for SQLite
-You can download DB browser for SQLite to visually interact with your database.
-Run a sample query `SELECT * FROM tasks`: Get all tasks stored in the database
-
-![DB Browser Image](./src/assets/db_browser.png)
+## PostgreSQL and Docker
+PostgreSQL was used for the database which is wrapped in a docker conatiner. 
 
 ## Swagger UI
 Go to `http://localhost:3000/docs` to use swagger UI for API testing
