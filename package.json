@@ -12,6 +12,7 @@
 		"swagger": "node src/swagger.js"
 	},
 	"dependencies": {
+		"@supabase/supabase-js": "^2.112.0",
 		"express": "^5.2.1",
 		"pg": "^8.22.0",
 		"swagger-autogen": "^2.23.7",
