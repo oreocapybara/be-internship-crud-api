@@ -4,6 +4,7 @@ const openapi = require("../openapi.json");
 
 const metaRoutes = require("./routes/meta.routes");
 const tasksRoutes = require("./routes/tasks.routes");
+const authRoutes = require("./routes/auth.routes")
 const { errorHandler } = require("./middleware/error-handler");
 
 const swaggerAutogen = require("swagger-autogen")();
@@ -27,6 +28,7 @@ function createApp() {
 	//Feature Routes
 	app.use("/", metaRoutes);
 	app.use("/", tasksRoutes);
+	app.use("/", authRoutes);
 
 	app.use(errorHandler);
 
