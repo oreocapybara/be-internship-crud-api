@@ -23,14 +23,6 @@ npm i
 cp .env.example .env && docker compose up 
 ```
 
-## Scripts
-
-| Script             | Use                                                |
-| ------------------ | --------------------------------------------------- |
-| `npm start`        | Generates swagger docs, runs the API               |
-| `npm run dev`       | Same as start, but restarts on file changes        |
-| `npm run swagger`   | Regenerates `openapi.json` from route annotations  |
-
 ## Architecture
 
 Layered: routes → services → repositories.
