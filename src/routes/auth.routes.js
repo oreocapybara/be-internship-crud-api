@@ -25,14 +25,7 @@ router.get("/public/info", (req, res) => {
 
 router.get("/protected/profile", async (req, res, next) => {
 	try {
-		const authHeader = req.headers.authorization;
-		const [scheme, token] = (authHeader || "").split(" ");
-
-		if (!authHeader || scheme !== "Bearer" || !token) {
-			throw new AuthError("Access token required");
-		}
-
-		res.json({ message: "Token received", token });
+		res.json(await service.verifyUser(req.headers.authorization));
 	} catch (err) {
 		next(err);
 	}

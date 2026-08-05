@@ -1,5 +1,5 @@
 const { ValidationError, AuthError } = require("../errors");
-const {supabase} = require("../lib/supabase");
+const { supabase } = require("../lib/supabase");
 
 async function signUpNewUser(body = {}) {
 	if (Object.keys(body).length === 0 || !body) {
@@ -38,4 +38,25 @@ async function signInUser(body = {}) {
 	return data;
 }
 
-module.exports = { signUpNewUser, signInUser };
+async function verifyUser(header) {
+	const [scheme, token] = (header || "").split(" ");
+
+	if (!header || scheme !== "Bearer" || !token) {
+		throw new AuthError("Access token required");
+	}
+
+	const {
+		data: { user },
+		error,
+	} = await supabase.auth.getUser(token);
+
+	if (error) {
+		throw new AuthError("Invalid or expired token");
+	}
+
+	const { id, email, created_at } = user;
+
+	return { id, email, created_at };
+}
+
+module.exports = { signUpNewUser, signInUser, verifyUser };
