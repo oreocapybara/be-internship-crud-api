@@ -59,4 +59,12 @@ async function verifyUser(header) {
 	return { id, email, created_at };
 }
 
-module.exports = { signUpNewUser, signInUser, verifyUser };
+async function signOutUser() {
+	const { error } = await supabase.auth.signOut({ scope: 'local' });
+
+	if (error) {
+		throw new AuthError(error.message);
+	}
+}
+
+module.exports = { signUpNewUser, signInUser, verifyUser, signOutUser, };
