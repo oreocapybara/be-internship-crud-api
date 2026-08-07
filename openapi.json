@@ -320,26 +320,134 @@
     },
     "/auth/signup": {
       "post": {
+        "summary": "Sign Up new User",
         "description": "",
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Signed up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Email or Password must not be empty",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "testemail@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
           }
         }
       }
     },
     "/auth/login": {
       "post": {
+        "summary": "Log in User",
         "description": "",
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "201": {
+            "description": "Signed up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Email or Password must not be empty",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "testemail@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
           }
         }
       }
     },
     "/public/info": {
       "get": {
+        "summary": "Public accessible route",
         "description": "",
         "responses": {
           "200": {
@@ -350,6 +458,7 @@
     },
     "/protected/profile": {
       "get": {
+        "summary": "Profile Information",
         "description": "",
         "parameters": [
           {
@@ -362,13 +471,65 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Authenticated user profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "b312f"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "user@example.com"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2026-08-07T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/auth/logout": {
       "post": {
+        "summary": "Log out",
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Logged out"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/protected/dashboard": {
+      "get": {
+        "summary": "Dashboard",
         "description": "",
         "parameters": [
           {
@@ -383,11 +544,23 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
       "Task": {
         "type": "object",
@@ -417,6 +590,49 @@
           "error": {
             "type": "string",
             "example": "Task NOT Found"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "example": "b312f"
+              },
+              "email": {
+                "type": "string",
+                "example": "user@example.com"
+              },
+              "created_at": {
+                "type": "string",
+                "example": "2026-08-07T12:00:00Z"
+              }
+            }
+          },
+          "session": {
+            "type": "object",
+            "properties": {
+              "access_token": {
+                "type": "string",
+                "example": "eyJhbGciOi..."
+              },
+              "refresh_token": {
+                "type": "string",
+                "example": "abcd1234"
+              },
+              "expires_in": {
+                "type": "integer",
+                "example": 3600
+              },
+              "token_type": {
+                "type": "string",
+                "example": "bearer"
+              }
+            }
           }
         }
       }

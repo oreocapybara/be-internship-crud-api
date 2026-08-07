@@ -8,6 +8,13 @@ const doc = {
 	},
 	host: "localhost:3000",
 	components: {
+		securitySchemes: {
+			bearerAuth: {
+				type: "http",
+				scheme: "bearer",
+				bearerFormat: "JWT",
+			},
+		},
 		"@schemas": {
 			Task: {
 				type: "object",
@@ -22,6 +29,40 @@ const doc = {
 				type: "object",
 				properties: {
 					error: { type: "string", example: "Task NOT Found" },
+				},
+			},
+			AuthResponse: {
+				type: "object",
+				properties: {
+					user: {
+						type: "object",
+						properties: {
+							id: { type: "string", example: "b312f" },
+							email: {
+								type: "string",
+								example: "user@example.com",
+							},
+							created_at: {
+								type: "string",
+								example: "2026-08-07T12:00:00Z",
+							},
+						},
+					},
+					session: {
+						type: "object",
+						properties: {
+							access_token: {
+								type: "string",
+								example: "eyJhbGciOi...",
+							},
+							refresh_token: {
+								type: "string",
+								example: "abcd1234",
+							},
+							expires_in: { type: "integer", example: 3600 },
+							token_type: { type: "string", example: "bearer" },
+						},
+					},
 				},
 			},
 		},
