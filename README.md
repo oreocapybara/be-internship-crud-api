@@ -2,6 +2,8 @@
 
 A CRUD API using express to manage user tasks. Create a title, mark it as done. Simple as that.
 
+Authentication (sign up, log in, log out, and token-protected routes) is handled via Supabase Auth, with a public route and a Bearer-token-protected route to demonstrate both.
+
 ## Get Started
 
 **Clone the repo**
@@ -16,6 +18,17 @@ git clone https://github.com/oreocapybara/be-internship-crud-api.git
 npm install #or
 npm i
 ```
+
+**Environment Variables**
+
+Copy `.env.example` to `.env` and fill in your Supabase project credentials (found in your Supabase project's API settings):
+
+| Variable       | Description                                  |
+| -------------- | --------------------------------------------- |
+| `DATABASE_URL` | PostgreSQL connection string for the tasks DB |
+| `SUPABASE_URL` | Your Supabase project URL                     |
+| `SUPABASE_KEY` | Your Supabase project's anon/public API key   |
+| `PORT`         | Port the API listens on (defaults to `3000`)  |
 
 **Run it**
 
@@ -37,10 +50,24 @@ Errors thrown by services bubble up to `src/middleware/error-handler.js`, which 
 PostgreSQL was used for the database which is wrapped in a docker conatiner. 
 
 ## Swagger UI
-Go to `http://localhost:3000/docs` to use swagger UI for API testing
+Go to `http://localhost:3000/docs` to use swagger UI for API testing. 
+Protected routes are marked with a lock icon — click **Authorize** and 
+paste an `access_token` (from `/auth/login`) as a Bearer token to call them from the UI.
 ![Swagger UI](./src/assets/swagger_ui.png)
 
-## Endpoints
+## Authentication
+
+| Endpoint                       | Description                          | Auth Required |
+| ------------------------------- | ------------------------------------ | ------------- |
+| `POST /auth/signup`             | Create a new user account            | No            |
+| `POST /auth/login`              | Log in and receive a session token   | No            |
+| `GET /public/info`              | Publicly accessible info             | No            |
+| `GET /protected/profile`        | Return the authenticated user's info | Yes (Bearer)  |
+| `POST /auth/logout`             | Invalidate the current session       | Yes (Bearer)  |
+
+Protected routes expect `Authorization: Bearer <access_token>`, where the token comes from the `session.access_token` field returned by `/auth/login` (or `/auth/signup`).
+
+## Task Endpoints
 
 | Endpoint                               | Description                       | Response          |
 | -------------------------------------- | --------------------------------- | ----------------- |
